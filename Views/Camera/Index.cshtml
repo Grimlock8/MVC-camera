@@ -1,0 +1,148 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@{
+    ViewData["Title"] = "Camera Page";
+}
+
+
+
+<div class="view-area">
+
+    <!-- Camera -->
+    <div id="camera">
+        <!-- Camera sensor -->
+        <canvas id="camera--sensor"></canvas>
+        <!-- Camera view -->
+        <video id="camera--view" autoplay playsinline></video>
+        <!-- Camera output -->
+        <img src="//:0" alt="" id="camera--output">
+        <!-- Camera trigger -->
+        <a download="my-photo.jpg" id="camera--trigger">Take a picture</a>
+
+        <a id="downloadPhoto" download="my-photo.jpg" class="button" role="button">Download</a>
+    </div>
+
+
+
+</div>
+
+
+
+<script>
+    
+// Set constraints for the video stream
+var constraints = { video: { facingMode: "environment" }, audio: false };
+//var constraints = { video: { facingMode: "user" }, audio: false };
+var track = null;
+
+// Define constants
+const cameraView = document.querySelector("#camera--view"),
+    cameraOutput = document.querySelector("#camera--output"),
+    cameraSensor = document.querySelector("#camera--sensor"),
+    cameraTrigger = document.querySelector("#camera--trigger"),   
+    downloadTrigger = document.querySelector("#downloadPhoto");
+
+// Access the device camera and stream to cameraView
+function cameraStart() {
+    navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(function(stream) {
+            track = stream.getTracks()[0];
+            cameraView.srcObject = stream;
+        })
+        .catch(function(error) {
+            console.error("Oops. Something is broken.", error);
+        });
+}
+
+// Take a picture when cameraTrigger is tapped
+cameraTrigger.onclick = function() {
+    cameraSensor.width = cameraView.videoWidth;
+    cameraSensor.height = cameraView.videoHeight;
+    cameraSensor.getContext("2d").drawImage(cameraView, 0, 0);
+    cameraOutput.src = cameraSensor.toDataURL("image/jpeg");
+    cameraOutput.classList.add("taken");
+    // track.stop();
+};
+
+downloadTrigger.onclick = function() {
+    const canvas = cameraSensor.toDataURL("image/jpeg")
+    .replace("image/jpeg", "image/octet-stream");    
+    downloadTrigger.setAttribute("href", canvas);
+};
+
+
+// Start the video stream when the window loads
+window.addEventListener("load", cameraStart, false);
+    
+
+</script>
+
+
+<style>
+.view-area {
+    background-color:aqua;
+    width: 500px !important;
+    height: 300px !important;
+}
+#camera, #camera--view, #camera--sensor, #camera--output{
+    position: fixed;
+    height: 50%;
+    width: 50%;
+    object-fit: cover;
+}
+
+/* This can be deleted or commented out when the final app
+    is ready to go.  It is only useful for the User facing
+    Camera.
+*/
+#camera--view, #camera--sensor, #camera--output{
+    transform: scaleX(-1);
+    filter: FlipH;
+}
+#camera--trigger{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: 60px;
+    left: calc(50% - 100px);
+}
+
+#downloadPhoto{
+    width: 200px;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 30px;
+    border: none;
+    padding: 15px 20px;
+    text-align: center;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    position: fixed;
+    bottom: 5px;
+    left: calc(50% - 119px);
+}
+
+.taken{
+    height: 100px!important;
+    width: 100px!important;
+    transition: all 0.5s ease-in;
+    border: solid 3px white;
+    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
+    top: 20px;
+    right: 20px;
+    z-index: 2;
+}
+
+</style>
+
